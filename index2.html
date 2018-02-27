@@ -1,0 +1,89 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>trackingjs</title>
+    <script src="./build/tracking-min.js"></script>
+    <script src="/build/data/face-min.js"></script>
+    <style>
+        body {
+            overflow: hidden;
+        }
+
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        #canvas {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 2;
+        }
+
+        #myVideo {
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1;
+        }
+
+
+        #mask {
+            position: fixed;
+            left: -1111111111110;
+            top: 0;
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="400" height="500"></canvas>
+    <img id="myVideo" width="400" src='./timg.jpg'>
+    <img src="./mask.png" id="mask" alt="">
+    <script>
+        window.onload = function () {
+            var canvas = document.getElementById('canvas');
+            var context = canvas.getContext('2d');
+            let mask = document.querySelector('#mask')
+
+            tracking.ColorTracker.registerColor('red', (r, g, b) => {
+                if (Math.abs(r - 60) < 30 && Math.abs(g - 51) < 50 && Math.abs(b - 86) < 50) {
+                    return true
+                }
+                return false
+            })
+
+            tracking.ColorTracker.registerColor('white', (r, g, b) => {
+                if (Math.abs(r - 250) < 1 && Math.abs(g - 250) < 1 && Math.abs(b - 250) < 1) {
+                    return true
+                }
+                return false
+            })
+
+            let colors = new tracking.ColorTracker(['red','white'])
+            let objects = new tracking.ObjectTracker(['face']);
+            objects.setStepSize(1.7);
+
+            colors.on('track', e => {
+                if (e.data.length === 0) {
+
+                } else {
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                    e.data.forEach(rect => {
+                        context.strokeStyle = 'red';
+                        context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+                    })
+                }
+            })
+
+            tracking.track('#myVideo', colors)
+        }
+    </script>
+</body>
+
+</html>
